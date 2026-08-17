@@ -17,38 +17,38 @@ from datetime import datetime, timezone
 
 from playwright.sync_api import sync_playwright
 
-from mytechconnect_client import (
-    HOST_PREFIX,
-    extract_main_values,
-    launch_kwargs,
-    open_device,
-    open_page,
-    precise_water_temperature,
-    validate_url,
-)
+try:
+    from mytechconnect_client import (
+        extract_main_values,
+        launch_kwargs,
+        normalize_sensor_values,
+        open_device,
+        open_page,
+        precise_water_temperature,
+        validate_url,
+    )
+except ModuleNotFoundError:  # Import also works as tools.mytechconnect_dump.
+    from tools.mytechconnect_client import (
+        extract_main_values,
+        launch_kwargs,
+        normalize_sensor_values,
+        open_device,
+        open_page,
+        precise_water_temperature,
+        validate_url,
+    )
 
 
-def main():
-    url = os.environ.get("MYTECHCONNECT_URL")
+def collect_values(url):
     if not validate_url(url):
-        print("MYTECHCONNECT_URL must be a MyTechConnect user-app URL", file=sys.stderr)
-        return 2
-
+        raise ValueError("MYTECHCONNECT_URL must be a MyTechConnect user-app URL")
     try:
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(**launch_kwargs())
             page = open_page(browser, url)
             open_device(page)
             raw = extract_main_values(page)
-            values = {
-                "binary_sensor.pool_heat_pump": raw["heat_pump_state"],
-                "binary_sensor.pool_water_flow": raw["water_flow"],
-                "sensor.pool_water_temperature": raw["water_temperature"],
-                "sensor.pool_outdoor_temperature": raw["outdoor_temperature"],
-                "sensor.pool_heat_pump_operation_mode": raw["operation_mode"],
-                "sensor.pool_heat_pump_regulation_mode": raw["regulation_mode"],
-                "sensor.pool_heat_pump_temperature_setpoint": raw["setpoint"],
-            }
+            values = normalize_sensor_values(raw)
 
             # A missing main-page temperature means no reliable water reading.
             # Do not consult the estimated chart in that case.
@@ -61,7 +61,16 @@ def main():
                     pass
 
             browser.close()
+            return values
     except Exception as exc:  # JSON output remains machine-readable on failure.
+        raise RuntimeError(str(exc)) from exc
+
+
+def main():
+    url = os.environ.get("MYTECHCONNECT_URL")
+    try:
+        values = collect_values(url)
+    except Exception as exc:
         print(json.dumps({"error": str(exc)}, ensure_ascii=False), file=sys.stdout)
         return 1
 

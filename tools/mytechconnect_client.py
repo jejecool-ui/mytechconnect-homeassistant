@@ -1,6 +1,7 @@
 """Shared read-only MyTechConnect browser client."""
 
 import os
+import re
 
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
@@ -74,6 +75,29 @@ def extract_main_values(page):
         "operation_mode": mode_from_class(page, "#heat-pump-power-mode .state-button-container:nth-child(1) .state-button-value .istd-co-icon"),
         "regulation_mode": mode_from_class(page, "#heat-pump-power-mode .state-button-container:nth-child(2) .state-button-value .istd-co-icon"),
         "setpoint": text_or_none(page, ".order-and-value-heatpump .order-and-value-set .order-and-value-order-number"),
+    }
+
+
+def number_from_display(value):
+    """Convert a display value such as ``26.8°C`` to a JSON number."""
+    if value is None:
+        return None
+    match = re.search(r"[-+]?\d+(?:[.,]\d+)?", value)
+    if not match:
+        return None
+    number = float(match.group(0).replace(",", "."))
+    return int(number) if number.is_integer() else number
+
+
+def normalize_sensor_values(raw):
+    return {
+        "binary_sensor.pool_heat_pump": raw["heat_pump_state"],
+        "binary_sensor.pool_water_flow": raw["water_flow"],
+        "sensor.pool_water_temperature": number_from_display(raw["water_temperature"]),
+        "sensor.pool_outdoor_temperature": number_from_display(raw["outdoor_temperature"]),
+        "sensor.pool_heat_pump_operation_mode": raw["operation_mode"],
+        "sensor.pool_heat_pump_regulation_mode": raw["regulation_mode"],
+        "sensor.pool_heat_pump_temperature_setpoint": number_from_display(raw["setpoint"]),
     }
 
 

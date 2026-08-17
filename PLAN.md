@@ -65,6 +65,11 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 - [x] Préparer un probe Playwright Python dans `tools/mytechconnect_probe.py`.
 - [x] Créer `tools/mytechconnect_dump.py` pour produire les sensors courants en JSON.
 - [x] Factoriser le comportement commun dans `tools/mytechconnect_client.py`.
+- [x] Normaliser les températures en nombres JSON et publier `null` lorsque la valeur est indisponible.
+- [x] Préparer MQTT Discovery et la publication des états dans `tools/mytechconnect_mqtt.py`.
+- [x] Ajouter le lanceur interactif `tools/run_mytechconnect_mqtt.sh`.
+- [ ] Installer `paho-mqtt` et tester la publication avec le broker MQTT de Home Assistant.
+- [ ] Emballer le script et Chromium dans l'add-on Home Assistant.
 - [x] Installer Playwright et Chromium dans un environnement temporaire WSL (`/tmp/mytechconnect-venv`).
 - [ ] Fournir une nouvelle URL de session MyTechConnect au probe.
 - [x] Identifier dans le DOM rendu le libellé et la valeur de température d'eau.
