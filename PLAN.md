@@ -70,6 +70,10 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 - [x] Ajouter le lanceur interactif `tools/run_mytechconnect_mqtt.sh`.
 - [ ] Installer `paho-mqtt` et tester la publication avec le broker MQTT de Home Assistant.
 - [ ] Emballer le script et Chromium dans l'add-on Home Assistant.
+- [x] Préparer une image Docker ARM64 avec Chromium et un polling toutes les 15 minutes dans `docker/`.
+- [x] Préparer le build ARM64 depuis WSL avec `docker buildx`.
+- [x] Activer l'émulation ARM64 via `tonistiigi/binfmt` pour construire depuis l'hôte amd64.
+- [x] Terminer et vérifier le build de l'image `mytechconnect-pool:arm64` (`linux/arm64`).
 - [x] Installer Playwright et Chromium dans un environnement temporaire WSL (`/tmp/mytechconnect-venv`).
 - [ ] Fournir une nouvelle URL de session MyTechConnect au probe.
 - [x] Identifier dans le DOM rendu le libellé et la valeur de température d'eau.

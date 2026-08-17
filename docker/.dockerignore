@@ -1,0 +1,9 @@
+analysis/
+.git/
+.gitignore
+.venv/
+*.apk
+*.xapk
+*.har
+AGENTS.md
+PLAN.md

@@ -53,6 +53,27 @@ mytechconnect/pool/availability
 
 Les configurations MQTT Discovery sont publiées sous `homeassistant/` par défaut.
 
+## Image Docker
+
+Le contexte de build est la racine du projet :
+
+```bash
+docker buildx build --platform linux/arm64 -f docker/Dockerfile -t mytechconnect-pool:arm64 --load .
+```
+
+Depuis un WSL amd64, activer d'abord l'émulation ARM64 si nécessaire :
+
+```bash
+docker run --privileged --rm tonistiigi/binfmt --install arm64
+docker buildx inspect --bootstrap
+```
+
+La sortie de `docker buildx inspect --bootstrap` doit mentionner `linux/arm64`. L'erreur `exec format error` pendant un `RUN apt-get` indique généralement que cette émulation n'est pas activée.
+
+L'image utilise Chromium système et exécute un polling toutes les 900 secondes par défaut. Les variables obligatoires sont `MYTECHCONNECT_URL`, `MQTT_HOST`, `MQTT_USERNAME` et `MQTT_PASSWORD`; `POLL_INTERVAL_SECONDS` permet de modifier l'intervalle.
+
+Home Assistant OS ne doit pas être administré avec `docker run` directement. Pour l'exécuter sur cette plateforme, intégrer cette image dans un add-on Home Assistant personnalisé.
+
 ## Exécution locale
 
 Depuis la racine du projet :
