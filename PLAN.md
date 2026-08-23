@@ -69,8 +69,10 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 - [x] Préparer MQTT Discovery et la publication des états dans `tools/mytechconnect_mqtt.py`.
 - [x] Ajouter le lanceur interactif `tools/run_mytechconnect_mqtt.sh`.
 - [ ] Installer `paho-mqtt` et tester la publication avec le broker MQTT de Home Assistant.
-- [ ] Emballer le script et Chromium dans l'add-on Home Assistant.
+- [x] Emballer le script et Chromium dans l'add-on Home Assistant.
 - [x] Préparer une image Docker ARM64 avec Chromium et un polling toutes les 15 minutes dans `docker/`.
+- [x] Préparer la structure de l'add-on Home Assistant dans `addon/mytechconnect_pool/`.
+- [x] Lire les options de l'add-on depuis `/data/options.json` sans intégrer les secrets à l'image.
 - [x] Préparer le build ARM64 depuis WSL avec `docker buildx`.
 - [x] Activer l'émulation ARM64 via `tonistiigi/binfmt` pour construire depuis l'hôte amd64.
 - [x] Terminer et vérifier le build de l'image `mytechconnect-pool:arm64` (`linux/arm64`).

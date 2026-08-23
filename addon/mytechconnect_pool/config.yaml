@@ -1,0 +1,32 @@
+name: MyTechConnect Pool
+version: "0.1.0"
+slug: mytechconnect_pool
+description: >-
+  Publie les états et températures de la pompe à chaleur MyTechConnect dans
+  Home Assistant via MQTT Discovery.
+url: https://github.com/jejecool-ui/mytechconnect-homeassistant
+image: ghcr.io/jejecool-ui/mytechconnect-homeassistant
+arch:
+  - aarch64
+startup: application
+boot: auto
+init: false
+legacy: true
+
+options:
+  mytechconnect_url: null
+  mqtt_host: core-mosquitto
+  mqtt_port: 1883
+  mqtt_username: null
+  mqtt_password: null
+  mqtt_discovery_prefix: homeassistant
+  poll_interval_seconds: 900
+
+schema:
+  mytechconnect_url: password
+  mqtt_host: str
+  mqtt_port: port
+  mqtt_username: str
+  mqtt_password: password
+  mqtt_discovery_prefix: str
+  poll_interval_seconds: int

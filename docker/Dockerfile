@@ -23,6 +23,7 @@ RUN pip install --no-cache-dir \
 COPY tools/mytechconnect_client.py /app/tools/mytechconnect_client.py
 COPY tools/mytechconnect_dump.py /app/tools/mytechconnect_dump.py
 COPY tools/mytechconnect_mqtt.py /app/tools/mytechconnect_mqtt.py
+COPY docker/options_env.py /app/options_env.py
 COPY docker/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 

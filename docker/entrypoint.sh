@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+load_home_assistant_options() {
+    if [[ ! -f /data/options.json ]]; then
+        return
+    fi
+
+    options_exports=$(python /app/options_env.py /data/options.json)
+    eval "$options_exports"
+}
+
+load_home_assistant_options
+
 : "${MYTECHCONNECT_URL:?MYTECHCONNECT_URL is required}"
 : "${MQTT_HOST:?MQTT_HOST is required}"
 : "${MQTT_USERNAME:?MQTT_USERNAME is required}"
