@@ -2,8 +2,8 @@ name: MyTechConnect Pool
 version: "0.1.0"
 slug: mytechconnect_pool
 description: >-
-  Publie les états et températures de la pompe à chaleur MyTechConnect dans
-  Home Assistant via MQTT Discovery.
+  Read-only MyTechConnect pool heat pump monitoring for Home Assistant via
+  MQTT Discovery.
 url: https://github.com/jejecool-ui/mytechconnect-homeassistant
 image: ghcr.io/jejecool-ui/mytechconnect-homeassistant
 arch:

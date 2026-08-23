@@ -1,21 +1,21 @@
 # MyTechConnect Pool
 
-Cette app lit l'interface web MyTechConnect en lecture seule avec Chromium
-et publie les capteurs dans Home Assistant via MQTT Discovery.
+This app reads the MyTechConnect web interface in read-only mode with Chromium
+and publishes sensors to Home Assistant through MQTT Discovery.
 
 ## Installation
 
-1. Dans Home Assistant, ouvrir **Settings → Apps → Install app**.
-2. Ouvrir le menu `⋮`, puis **Repositories**.
-3. Ajouter le dépôt GitHub personnalisé :
+1. In Home Assistant, open **Settings → Apps → Install app**.
+2. Open the `⋮` menu and select **Repositories**.
+3. Add the custom repository:
    `https://github.com/jejecool-ui/mytechconnect-homeassistant`.
-4. Installer **MyTechConnect Pool** depuis le dépôt.
-5. Renseigner l'URL de session MyTechConnect, l'hôte MQTT et les identifiants
-   MQTT dans la configuration de l'app.
-6. Démarrer l'app et vérifier les entités MQTT Discovery.
+4. Install **MyTechConnect Pool** from the repository.
+5. Enter the MyTechConnect session URL, MQTT host, and MQTT credentials in the
+   app configuration.
+6. Start the app and check the MQTT Discovery entities.
 
-L'URL de session et le mot de passe MQTT sont des options masquées et ne sont
-pas inclus dans l'image Docker.
+The session URL and MQTT password are masked options and are not included in
+the Docker image.
 
 ## Architecture supportée
 

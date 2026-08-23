@@ -74,6 +74,7 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 - [x] Préparer la structure de l'add-on Home Assistant dans `addon/mytechconnect_pool/`.
 - [x] Lire les options de l'add-on depuis `/data/options.json` sans intégrer les secrets à l'image.
 - [x] Ajouter le dépôt d'add-on (`repository.yaml`), sa documentation et la publication GHCR via GitHub Actions.
+- [x] Ajouter une description anglaise et une icône dédiée pour l'app Home Assistant.
 - [x] Préparer le build ARM64 depuis WSL avec `docker buildx`.
 - [x] Activer l'émulation ARM64 via `tonistiigi/binfmt` pour construire depuis l'hôte amd64.
 - [x] Terminer et vérifier le build de l'image `mytechconnect-pool:arm64` (`linux/arm64`).
