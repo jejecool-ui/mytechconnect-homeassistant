@@ -7,10 +7,10 @@ heat pump.
 
 ## Installation in Home Assistant
 
-The Docker image is published to GitHub Container Registry. The add-on is
+The Docker image is published to GitHub Container Registry. The app is
 currently available for `aarch64` (`linux/arm64`) systems.
 
-1. In Home Assistant, open **Settings → Add-ons → Add-on Store**.
+1. In Home Assistant, open **Settings → Apps → Install app**.
 2. Open the `⋮` menu and select **Repositories**.
 3. Add this custom repository:
 
@@ -19,12 +19,12 @@ currently available for `aarch64` (`linux/arm64`) systems.
    ```
 
 4. Install **MyTechConnect Pool**.
-5. Open the add-on configuration and enter the MyTechConnect session URL and
+5. Open the app configuration and enter the MyTechConnect session URL and
    MQTT settings.
-6. Start the add-on.
+6. Start the app.
 
 Home Assistant supervises the container, provides the options through
-`/data/options.json`, and displays the container output in the add-on logs.
+`/data/options.json`, and displays the container output in the app logs.
 
 ## Configuration
 
@@ -39,11 +39,11 @@ Home Assistant supervises the container, provides the options through
 | `poll_interval_seconds` | no | `900` |
 
 The MyTechConnect session URL and MQTT password are masked fields in the
-add-on configuration. Never commit them to GitHub or copy them into logs.
+app configuration. Never commit them to GitHub or copy them into logs.
 
 ## Home Assistant entities
 
-The add-on publishes these entities automatically:
+The app publishes these entities automatically:
 
 - `binary_sensor.pool_heat_pump`
 - `binary_sensor.pool_water_flow`
@@ -65,7 +65,7 @@ mytechconnect/pool/availability
 ```text
 Home Assistant Supervisor
         ↓ options.json / lifecycle / logs
-MyTechConnect Pool add-on
+MyTechConnect Pool app
         ↓ GHCR image
 Chromium + Playwright + DOM/Highcharts extraction
         ↓
@@ -74,7 +74,7 @@ MQTT Discovery + MQTT states
 Home Assistant entities
 ```
 
-The add-on definition is stored in `addon/mytechconnect_pool/`. The image is
+The app definition is stored in `addon/mytechconnect_pool/`. The image is
 published as:
 
 ```text
