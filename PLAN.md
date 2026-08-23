@@ -55,13 +55,13 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 
 ## Décision d'implémentation
 
-- [ ] Prioriser une lecture seule de la température d'eau avant toute commande ou écriture.
-- [ ] Exposer les valeurs avec des noms anglais préfixés par `pool` : `sensor.pool_water_temperature`, `binary_sensor.pool_heat_pump`, `binary_sensor.pool_water_flow`, `sensor.pool_heat_pump_operation_mode`, `sensor.pool_heat_pump_regulation_mode`, `sensor.pool_heat_pump_temperature_setpoint` et `sensor.pool_outdoor_temperature`.
+- [x] Prioriser une lecture seule de la température d'eau avant toute commande ou écriture.
+- [x] Exposer les valeurs avec des noms anglais préfixés par `pool` : `sensor.pool_water_temperature`, `binary_sensor.pool_heat_pump`, `binary_sensor.pool_water_flow`, `sensor.pool_heat_pump_operation_mode`, `sensor.pool_heat_pump_regulation_mode`, `sensor.pool_heat_pump_temperature_setpoint` et `sensor.pool_outdoor_temperature`.
 - [ ] Vérifier que l'intégration Recorder de Home Assistant conserve cet historique.
 - [ ] Ajouter une carte `history-graph` ou `statistics-graph` dans le dashboard.
 - [ ] Capturer l'interface web ou le trafic de l'application pour identifier la source de la température.
 - [ ] Choisir l'intégration cloud si une API ou des messages MQTT réutilisables sont trouvés.
-- [ ] Sinon, évaluer un petit service logiciel avec navigateur headless qui ouvre l'interface MyTechConnect et publie la température vers MQTT/HA.
+- [x] Évaluer puis retenir un petit service logiciel avec navigateur headless qui ouvre l'interface MyTechConnect et publie la température vers MQTT/HA.
 - [x] Préparer un probe Playwright Python dans `tools/mytechconnect_probe.py`.
 - [x] Créer `tools/mytechconnect_dump.py` pour produire les sensors courants en JSON.
 - [x] Factoriser le comportement commun dans `tools/mytechconnect_client.py`.
@@ -73,6 +73,7 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 - [x] Préparer une image Docker ARM64 avec Chromium et un polling toutes les 15 minutes dans `docker/`.
 - [x] Préparer la structure de l'add-on Home Assistant dans `addon/mytechconnect_pool/`.
 - [x] Lire les options de l'add-on depuis `/data/options.json` sans intégrer les secrets à l'image.
+- [x] Ajouter le dépôt d'add-on (`repository.yaml`), sa documentation et la publication GHCR via GitHub Actions.
 - [x] Préparer le build ARM64 depuis WSL avec `docker buildx`.
 - [x] Activer l'émulation ARM64 via `tonistiigi/binfmt` pour construire depuis l'hôte amd64.
 - [x] Terminer et vérifier le build de l'image `mytechconnect-pool:arm64` (`linux/arm64`).
@@ -147,11 +148,13 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 - État `unavailable` : page inaccessible ou état indéterminé.
 - Topic d'état MQTT prévu : `mytechconnect/pool/water_flow/state`.
 
-## Déploiement prévu
+## Déploiement actuel
 
-- Faire tourner le service sur la même machine que Home Assistant, idéalement comme module complémentaire ou conteneur séparé.
-- Conserver un profil Chromium persistant pour la session MyTechConnect et effectuer une lecture toutes les 15 minutes.
-- Publier les valeurs via MQTT Discovery afin que Home Assistant crée automatiquement les entités et leur historique.
+- Installer le dépôt GitHub comme dépôt personnalisé d'add-ons Home Assistant.
+- Utiliser l'add-on `mytechconnect_pool` sur une machine `aarch64`.
+- Fournir l'URL de session et les identifiants MQTT dans la configuration de l'add-on.
+- Effectuer une lecture toutes les 15 minutes par défaut et publier les valeurs via MQTT Discovery.
+- Consulter l'état et les logs depuis le Supervisor Home Assistant.
 
 ## Sécurité
 

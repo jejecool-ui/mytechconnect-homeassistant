@@ -36,6 +36,21 @@ Le code commun est dans `tools/mytechconnect_client.py`.
 - `run_mytechconnect_dump.sh` : lanceur interactif du dump JSON.
 - `run_mytechconnect_mqtt.sh` : lanceur interactif de la publication MQTT.
 
+L'add-on Home Assistant est défini dans `addon/mytechconnect_pool/` et
+référence l'image publique
+`ghcr.io/jejecool-ui/mytechconnect-homeassistant`. L'image est actuellement
+publiée pour `aarch64` (`linux/arm64`) et ses tags de version doivent rester
+alignés avec `addon/mytechconnect_pool/config.yaml`.
+
+Home Assistant fournit les options de l'add-on dans `/data/options.json`.
+`docker/options_env.py` les convertit en variables d'environnement au
+démarrage ; aucune URL de session ni aucun identifiant MQTT ne doit être
+intégré à l'image ou au dépôt.
+
+Le Supervisor Home Assistant gère le cycle de vie de l'add-on et affiche les
+sorties standard de l'image dans ses logs. L'image effectue le polling et la
+publication MQTT ; elle ne doit jamais envoyer de commande à la PAC.
+
 ## Topics MQTT
 
 Les états sont publiés avec `retain=true` :
@@ -110,8 +125,9 @@ Dépendances :
 ## Vérifications avant modification
 
 ```bash
-/tmp/mytechconnect-venv/bin/python -m py_compile tools/mytechconnect_client.py tools/mytechconnect_dump.py tools/mytechconnect_mqtt.py tools/mytechconnect_probe.py
+/tmp/mytechconnect-venv/bin/python -m py_compile docker/options_env.py tools/mytechconnect_client.py tools/mytechconnect_dump.py tools/mytechconnect_mqtt.py tools/mytechconnect_probe.py
 bash -n tools/run_mytechconnect_dump.sh tools/run_mytechconnect_mqtt.sh
+bash -n docker/entrypoint.sh
 ```
 
 Mettre à jour `PLAN.md` lorsque l'architecture, les sensors ou les règles de sécurité changent.
