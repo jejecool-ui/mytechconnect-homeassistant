@@ -2,6 +2,7 @@
 """Read MyTechConnect and publish Home Assistant MQTT Discovery entities."""
 
 import json
+import logging
 import os
 import sys
 
@@ -65,6 +66,8 @@ NUMERIC_SENSOR_IDS = {
     if "unit_of_measurement" in definition
 }
 
+LOGGER = logging.getLogger(__name__)
+
 
 def topic_for(entity_id):
     object_id = entity_id.split(".", 1)[1]
@@ -110,7 +113,7 @@ def main():
     try:
         values = collect_values(os.environ.get("MYTECHCONNECT_URL"))
     except Exception as exc:
-        print(json.dumps({"error": str(exc)}, ensure_ascii=False), file=sys.stderr)
+        LOGGER.error("MyTechConnect MQTT poll failed: %s", exc)
         return 1
 
     host = os.environ.get("MQTT_HOST", "core-mosquitto")
@@ -121,6 +124,7 @@ def main():
 
     client = mqtt_client(host, port, username, password)
     try:
+        LOGGER.info("Publishing MyTechConnect MQTT Discovery and sensor states")
         publish_discovery(client, prefix)
         publish(client, AVAILABILITY_TOPIC, "online")
         for entity_id in SENSORS:
@@ -136,6 +140,7 @@ def main():
             publish(client, topic_for(entity_id), state)
         client.loop_stop()
         client.disconnect()
+        LOGGER.info("MyTechConnect MQTT publication completed")
     except Exception:
         client.loop_stop()
         client.disconnect()

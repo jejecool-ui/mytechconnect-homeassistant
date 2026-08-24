@@ -54,6 +54,7 @@ def collect_values(url):
     LOGGER.info("Starting MyTechConnect data request")
     try:
         with sync_playwright() as playwright:
+            LOGGER.info("Starting Chromium browser")
             browser = playwright.chromium.launch(**launch_kwargs())
             page = open_page(browser, url)
             open_device(page)
@@ -98,6 +99,7 @@ def collect_values(url):
                 )
 
             browser.close()
+            LOGGER.info("MyTechConnect data request completed")
             return values
     except Exception as exc:  # JSON output remains machine-readable on failure.
         raise RuntimeError(str(exc)) from exc
@@ -108,7 +110,7 @@ def main():
     try:
         values = collect_values(url)
     except Exception as exc:
-        print(json.dumps({"error": str(exc)}, ensure_ascii=False), file=sys.stdout)
+        LOGGER.error("MyTechConnect data request failed: %s", exc)
         return 1
 
     result = {

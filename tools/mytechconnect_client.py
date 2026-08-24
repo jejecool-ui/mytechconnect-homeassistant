@@ -2,11 +2,13 @@
 
 import os
 import re
+import logging
 
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 
 HOST_PREFIX = "https://mytech-connect.user-app.pool.mytech-connect.io/"
+LOGGER = logging.getLogger(__name__)
 
 
 def validate_url(url):
@@ -25,8 +27,10 @@ def launch_kwargs():
 
 
 def open_page(browser, url):
+    LOGGER.info("Opening MyTechConnect page (URL prefix, 50 chars): %s", url[:50])
     page = browser.new_page(viewport={"width": 1440, "height": 1200})
     page.goto(url, wait_until="domcontentloaded", timeout=60_000)
+    LOGGER.info("MyTechConnect page loaded; waiting for rendered application")
     try:
         page.wait_for_function(
             "document.querySelector('#user-app') && document.querySelector('#user-app').innerText.trim().length > 0",
@@ -35,13 +39,23 @@ def open_page(browser, url):
     except PlaywrightTimeoutError:
         # Let callers inspect the rendered error page or handle the exception
         # from the next navigation step.
-        pass
+        LOGGER.warning("Rendered MyTechConnect application did not appear within 60 seconds")
+    else:
+        LOGGER.info("Rendered MyTechConnect application detected")
     return page
 
 
 def open_device(page):
-    page.locator(".device-summary-item").first.click(timeout=15_000)
+    devices = page.locator(".device-summary-item")
+    LOGGER.info("Looking for MyTechConnect devices")
+    device_count = devices.count()
+    LOGGER.info("MyTechConnect device entries found: %d", device_count)
+    if not device_count:
+        LOGGER.error("No MyTechConnect device entry found on the rendered page")
+    LOGGER.info("Opening first MyTechConnect device")
+    devices.first.click(timeout=15_000)
     page.wait_for_timeout(1_500)
+    LOGGER.info("MyTechConnect device page opened")
 
 
 def text_or_none(page, selector):
@@ -64,10 +78,11 @@ def mode_from_class(page, selector):
 
 
 def extract_main_values(page):
+    LOGGER.info("Extracting values from the main MyTechConnect page")
     body = page.locator("body").inner_text()
     state = text_or_none(page, "#heat-pump-on-off")
     state = state.upper() if state else None
-    return {
+    values = {
         "heat_pump_state": state if state in {"ON", "OFF"} else None,
         "water_flow": None if not body else "OFF" if "PAS DE DÉBIT D’EAU" in body or "PAS DE DEBIT D'EAU" in body else "ON",
         "water_temperature": text_or_none(page, ".order-and-value-heatpump .order-and-value-value-number"),
@@ -76,6 +91,8 @@ def extract_main_values(page):
         "regulation_mode": mode_from_class(page, "#heat-pump-power-mode .state-button-container:nth-child(2) .state-button-value .istd-co-icon"),
         "setpoint": text_or_none(page, ".order-and-value-heatpump .order-and-value-set .order-and-value-order-number"),
     }
+    LOGGER.info("Main MyTechConnect values extracted")
+    return values
 
 
 def number_from_display(value):
@@ -102,6 +119,7 @@ def normalize_sensor_values(raw):
 
 
 def open_chart(page, menu_open=False):
+    LOGGER.info("Opening MyTechConnect data chart")
     if not menu_open:
         page.locator(".navbar-container button").nth(1).click(timeout=15_000)
         page.wait_for_timeout(300)
@@ -114,6 +132,7 @@ def open_chart(page, menu_open=False):
                 series.name === \"Température d'eau (calculée)\" && series.points.length > 0))""",
         timeout=30_000,
     )
+    LOGGER.info("MyTechConnect data chart loaded")
 
 
 def precise_water_temperature(page):
