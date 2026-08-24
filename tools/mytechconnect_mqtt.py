@@ -59,6 +59,12 @@ SENSORS = {
     },
 }
 
+NUMERIC_SENSOR_IDS = {
+    entity_id
+    for entity_id, definition in SENSORS.items()
+    if "unit_of_measurement" in definition
+}
+
 
 def topic_for(entity_id):
     object_id = entity_id.split(".", 1)[1]
@@ -119,7 +125,14 @@ def main():
         publish(client, AVAILABILITY_TOPIC, "online")
         for entity_id in SENSORS:
             value = values.get(entity_id)
-            state = "unavailable" if value is None else str(value)
+            if value is None:
+                # Home Assistant's MQTT sensor parser expects numeric topics
+                # to remain numeric. The literal "unavailable" is rejected
+                # for sensors with a unit/device class; "None" maps to
+                # unknown without producing a conversion error.
+                state = "None" if entity_id in NUMERIC_SENSOR_IDS else "unavailable"
+            else:
+                state = str(value)
             publish(client, topic_for(entity_id), state)
         client.loop_stop()
         client.disconnect()
