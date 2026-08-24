@@ -1,3 +1,4 @@
 analysis/mytechconnect-6.2
 tools/__pycache__
 docker/__pycache__
+conf.local.yaml

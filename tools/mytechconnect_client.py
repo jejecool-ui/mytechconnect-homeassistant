@@ -121,11 +121,17 @@ def normalize_sensor_values(raw):
 def open_chart(page, menu_open=False):
     LOGGER.info("Opening MyTechConnect data chart")
     if not menu_open:
+        LOGGER.info("Opening MyTechConnect navigation menu")
         page.locator(".navbar-container button").nth(1).click(timeout=15_000)
         page.wait_for_timeout(300)
+        LOGGER.info("MyTechConnect navigation menu opened")
+    LOGGER.info("Opening MyTechConnect Information section")
     page.get_by_text("Informations", exact=True).last.click(timeout=15_000)
     page.wait_for_timeout(500)
+    LOGGER.info("MyTechConnect Information section opened")
+    LOGGER.info("Selecting MyTechConnect data charts")
     page.get_by_text("Graphiques de données", exact=True).last.click(timeout=15_000)
+    LOGGER.info("MyTechConnect data charts selected; waiting for Highcharts data")
     page.wait_for_function(
         """() => (window.Highcharts?.charts || []).some(chart =>
             chart && chart.series.some(series =>
@@ -137,7 +143,8 @@ def open_chart(page, menu_open=False):
 
 def precise_water_temperature(page):
     open_chart(page)
-    return page.evaluate(
+    LOGGER.info("Reading last calculated water temperature point from Highcharts")
+    point = page.evaluate(
         """() => {
             const chart = (window.Highcharts?.charts || []).find(chart => chart &&
                 chart.series.some(series => series.name === "Température d'eau (calculée)"));
@@ -146,6 +153,15 @@ def precise_water_temperature(page):
             return point ? {value: point.y, timestamp_ms: point.x} : null;
         }"""
     )
+    if point:
+        LOGGER.info(
+            "Last calculated water temperature point read: value=%s, timestamp_ms=%s",
+            point["value"],
+            point["timestamp_ms"],
+        )
+    else:
+        LOGGER.warning("No calculated water temperature point found in Highcharts")
+    return point
 
 
 def all_chart_data(page):

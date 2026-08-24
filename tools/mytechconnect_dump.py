@@ -87,10 +87,12 @@ def collect_values(url):
                             "Water temperature precision unavailable; keeping "
                             "the main-page value"
                         )
-                except Exception:
+                except Exception as exc:
                     LOGGER.warning(
                         "Water temperature precision retrieval failed; keeping "
-                        "the main-page value"
+                        "the main-page value (%s: %s)",
+                        type(exc).__name__,
+                        exc,
                     )
             else:
                 LOGGER.info(
