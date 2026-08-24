@@ -11,6 +11,7 @@ Example:
 """
 
 import json
+import logging
 import os
 import sys
 from datetime import datetime, timezone
@@ -39,9 +40,18 @@ except ModuleNotFoundError:  # Import also works as tools.mytechconnect_dump.
     )
 
 
+LOGGER = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    stream=sys.stderr,
+)
+
+
 def collect_values(url):
     if not validate_url(url):
         raise ValueError("MYTECHCONNECT_URL must be a MyTechConnect user-app URL")
+    LOGGER.info("Starting MyTechConnect data request")
     try:
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(**launch_kwargs())
@@ -50,15 +60,42 @@ def collect_values(url):
             raw = extract_main_values(page)
             values = normalize_sensor_values(raw)
 
+            LOGGER.info(
+                "Intermediate result: heat pump state=%s, water flow=%s",
+                values["binary_sensor.pool_heat_pump"],
+                values["binary_sensor.pool_water_flow"],
+            )
+
             # A missing main-page temperature means no reliable water reading.
             # Do not consult the estimated chart in that case.
-            if values["sensor.pool_water_temperature"]:
+            if values["sensor.pool_water_temperature"] is not None:
+                LOGGER.info(
+                    "Starting water temperature precision retrieval "
+                    "(main-page temperature is available)"
+                )
                 try:
                     point = precise_water_temperature(page)
                     if point and point["value"] is not None:
                         values["sensor.pool_water_temperature"] = point["value"]
+                        LOGGER.info(
+                            "Water temperature precision retrieved: %.1f °C",
+                            point["value"],
+                        )
+                    else:
+                        LOGGER.warning(
+                            "Water temperature precision unavailable; keeping "
+                            "the main-page value"
+                        )
                 except Exception:
-                    pass
+                    LOGGER.warning(
+                        "Water temperature precision retrieval failed; keeping "
+                        "the main-page value"
+                    )
+            else:
+                LOGGER.info(
+                    "Water temperature unavailable on the main page; "
+                    "skipping chart retrieval"
+                )
 
             browser.close()
             return values
