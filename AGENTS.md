@@ -89,6 +89,21 @@ L'image utilise Chromium système et exécute un polling toutes les 900 secondes
 
 Home Assistant OS ne doit pas être administré avec `docker run` directement. Pour l'exécuter sur cette plateforme, intégrer cette image dans un add-on Home Assistant personnalisé.
 
+## Versionnement et publication
+
+La version de l'add-on et le tag de l'image Docker doivent toujours rester
+alignés. Lors d'une mise à jour de version, modifier la même version dans :
+
+- `addon/mytechconnect_pool/config.yaml` (`version`) ;
+- `.github/workflows/publish-image.yml` (tag Docker publié) ;
+- `README.md` si le tag d'image y est mentionné.
+
+Avant tout `git push`, demander explicitement à l'utilisateur s'il souhaite
+mettre à jour la version. Ne jamais changer la version implicitement. Si une
+mise à jour est demandée, vérifier tous les fichiers ci-dessus avant de
+pousser ; le workflow GitHub Actions publiera alors le tag de version et
+`latest` sur GHCR.
+
 ## Exécution locale
 
 Depuis la racine du projet :
