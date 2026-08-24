@@ -17,6 +17,6 @@ and publishes sensors to Home Assistant through MQTT Discovery.
 The session URL and MQTT password are masked options and are not included in
 the Docker image.
 
-## Architecture supportée
+## Supported architecture
 
-L'image publiée est actuellement disponible pour `aarch64` uniquement.
+The published image is currently available for `aarch64` only.
