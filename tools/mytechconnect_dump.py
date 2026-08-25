@@ -76,7 +76,7 @@ class ResourceMonitor:
         try:
             children_file = Path(f"/proc/{pid}/task/{pid}/children")
             children = [int(value) for value in children_file.read_text().split()]
-        except (FileNotFoundError, PermissionError, ProcessLookupError, ValueError):
+        except (OSError, ValueError):
             return []
 
         result = []
@@ -93,13 +93,13 @@ class ResourceMonitor:
             for line in Path(f"/proc/{pid}/smaps_rollup").read_text().splitlines():
                 if line.startswith("Pss:"):
                     return int(line.split()[1])
-        except (FileNotFoundError, PermissionError, ProcessLookupError, ValueError):
+        except (OSError, ValueError):
             pass
         try:
             for line in Path(f"/proc/{pid}/status").read_text().splitlines():
                 if line.startswith("VmRSS:"):
                     return int(line.split()[1])
-        except (FileNotFoundError, PermissionError, ProcessLookupError, ValueError):
+        except (OSError, ValueError):
             pass
         return 0
 
