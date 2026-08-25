@@ -70,38 +70,25 @@ def collect_values(url):
                     values["binary_sensor.pool_water_flow"],
                 )
 
-                # A missing main-page temperature means no reliable water reading.
-                # Do not consult the estimated chart in that case.
-                if values["sensor.pool_water_temperature"] is not None:
-                    LOGGER.info(
-                        "Starting water temperature precision retrieval "
-                        "(main-page temperature is available)"
-                    )
+                flow_is_on = values["binary_sensor.pool_water_flow"] == "ON"
+                if flow_is_on:
+                    LOGGER.info("Starting water temperature precision retrieval (water flow is ON)")
                     try:
                         point = precise_water_temperature(page)
-                        if point and point["value"] is not None:
-                            values["sensor.pool_water_temperature"] = point["value"]
-                            LOGGER.info(
-                                "Water temperature precision retrieved: %.1f °C",
-                                point["value"],
-                            )
-                        else:
-                            LOGGER.warning(
-                                "Water temperature precision unavailable; keeping "
-                                "the main-page value"
-                            )
+                        values["sensor.pool_water_temperature"] = (
+                            point["value"] if point and point["value"] is not None else None
+                        )
                     except Exception as exc:
                         LOGGER.warning(
-                            "Water temperature precision retrieval failed; keeping "
-                            "the main-page value (%s: %s)",
+                            "Water temperature precision retrieval failed; publishing "
+                            "water temperature as unavailable (%s: %s)",
                             type(exc).__name__,
                             sanitize_error(exc),
                         )
+                        values["sensor.pool_water_temperature"] = None
                 else:
-                    LOGGER.info(
-                        "Water temperature unavailable on the main page; "
-                        "skipping chart retrieval"
-                    )
+                    LOGGER.info("Water flow is OFF; skipping water chart retrieval")
+                    values["sensor.pool_water_temperature"] = None
 
                 LOGGER.info("MyTechConnect data request completed")
                 return values

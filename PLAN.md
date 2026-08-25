@@ -110,8 +110,9 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 ### Règle de lecture de la température d'eau
 
 - Lire d'abord la température entière affichée dans la vue principale de la PAC.
-- Si cette valeur est absente, considérer la température d'eau comme indisponible et ne pas ouvrir la page des graphiques : la valeur estimée du graphique est alors jugée invalide.
-- Si la valeur principale existe, le graphique peut éventuellement fournir une précision décimale ; en cas d'échec ou de valeur incohérente, conserver la valeur entière de la page principale.
+- Lire la température extérieure depuis la page principale à chaque collecte.
+- Ouvrir le graphique et lire la série `Température d'eau (calculée)` uniquement lorsque le débit est `ON` ; en cas d'échec, publier la température d'eau comme indisponible.
+- Lorsque le débit est `OFF`, ne lire ni publier aucune température d'eau ; conserver la température extérieure de la page principale.
 - Les logs de diagnostic indiquent les étapes `menu → Informations → Graphiques`, l'attente de Highcharts, puis la valeur et le timestamp du dernier point ; ils ne doivent jamais contenir l'URL complète, les cookies ou les identifiants.
 
 ### Essai de lecture 1

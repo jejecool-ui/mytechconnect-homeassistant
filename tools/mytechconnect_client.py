@@ -168,7 +168,7 @@ def open_chart(page, menu_open=False):
     page.wait_for_function(
         """() => (window.Highcharts?.charts || []).some(chart =>
             chart && chart.series.some(series =>
-                series.name === \"Température d'eau (calculée)\" && series.points.length > 0))""",
+                series.name === "Température d'eau (calculée)" && series.points.length > 0))""",
         timeout=PLAYWRIGHT_TIMEOUT_MS,
     )
     LOGGER.info("MyTechConnect data chart loaded")
