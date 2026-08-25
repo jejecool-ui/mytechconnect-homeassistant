@@ -11,6 +11,7 @@ HOST_PREFIX = "https://mytech-connect.user-app.pool.mytech-connect.io/"
 PLAYWRIGHT_TIMEOUT_MS = 120_000
 PLAYWRIGHT_CONNECTION_TIMEOUT_MS = 240_000
 BLOCKED_RESOURCE_TYPES = {"image", "font", "media"}
+MOBILE_VIEWPORT = {"width": 390, "height": 844}
 LOGGER = logging.getLogger(__name__)
 
 
@@ -59,7 +60,7 @@ def abort_nonessential_resource(route):
 
 def open_page(browser, url):
     LOGGER.info("Opening MyTechConnect page (URL prefix, 50 chars): %s", url[:50])
-    page = browser.new_page(viewport={"width": 1440, "height": 1200})
+    page = browser.new_page(viewport=MOBILE_VIEWPORT)
     page.route("**/*", abort_nonessential_resource)
     page.set_default_timeout(PLAYWRIGHT_TIMEOUT_MS)
     page.goto(url, wait_until="domcontentloaded", timeout=PLAYWRIGHT_CONNECTION_TIMEOUT_MS)

@@ -86,6 +86,8 @@ docker buildx inspect --bootstrap
 La sortie de `docker buildx inspect --bootstrap` doit mentionner `linux/arm64`. L'erreur `exec format error` pendant un `RUN apt-get` indique généralement que cette émulation n'est pas activée.
 
 L'image utilise Chromium système et exécute un polling toutes les 900 secondes par défaut. Les variables obligatoires sont `MYTECHCONNECT_URL`, `MQTT_HOST`, `MQTT_USERNAME` et `MQTT_PASSWORD`; `POLL_INTERVAL_SECONDS` permet de modifier l'intervalle.
+`RESOURCE_METRICS` active optionnellement les métriques de ressources du poll ;
+elle est désactivée par défaut.
 
 Home Assistant OS ne doit pas être administré avec `docker run` directement. Pour l'exécuter sur cette plateforme, intégrer cette image dans un add-on Home Assistant personnalisé.
 

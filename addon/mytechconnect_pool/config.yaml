@@ -1,5 +1,5 @@
 name: MyTechConnect Pool
-version: "0.1.4"
+version: "0.1.5"
 slug: mytechconnect_pool
 description: >-
   Read-only MyTechConnect pool heat pump monitoring for Home Assistant via
@@ -21,6 +21,7 @@ options:
   mqtt_password: null
   mqtt_discovery_prefix: homeassistant
   poll_interval_seconds: 900
+  resource_metrics: false
 
 schema:
   mytechconnect_url: password
@@ -30,3 +31,4 @@ schema:
   mqtt_password: password
   mqtt_discovery_prefix: str
   poll_interval_seconds: int
+  resource_metrics: bool

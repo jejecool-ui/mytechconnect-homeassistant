@@ -15,6 +15,7 @@ MAPPING = {
     "MQTT_PASSWORD": "mqtt_password",
     "MQTT_DISCOVERY_PREFIX": "mqtt_discovery_prefix",
     "POLL_INTERVAL_SECONDS": "poll_interval_seconds",
+    "RESOURCE_METRICS": "resource_metrics",
 }
 
 

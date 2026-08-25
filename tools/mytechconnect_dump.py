@@ -13,8 +13,12 @@ Example:
 import json
 import logging
 import os
+import resource
 import sys
+import threading
+import time
 from datetime import datetime, timezone
+from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
@@ -50,10 +54,93 @@ logging.basicConfig(
 )
 
 
+def resource_metrics_enabled():
+    return os.environ.get("RESOURCE_METRICS", "false").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+class ResourceMonitor:
+    """Sample this process and its Chromium descendants while enabled."""
+
+    def __init__(self):
+        self.max_processes = 0
+        self.max_memory_kb = 0
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._run, name="resource-monitor")
+
+    @staticmethod
+    def _children(pid):
+        try:
+            children_file = Path(f"/proc/{pid}/task/{pid}/children")
+            children = [int(value) for value in children_file.read_text().split()]
+        except (FileNotFoundError, PermissionError, ValueError):
+            return []
+
+        result = []
+        for child in children:
+            result.append(child)
+            result.extend(ResourceMonitor._children(child))
+        return result
+
+    @staticmethod
+    def _memory_kb(pid):
+        try:
+            # PSS accounts for shared Chromium pages proportionally, unlike
+            # RSS which would count the same shared pages for every process.
+            for line in Path(f"/proc/{pid}/smaps_rollup").read_text().splitlines():
+                if line.startswith("Pss:"):
+                    return int(line.split()[1])
+        except (FileNotFoundError, PermissionError, ValueError):
+            pass
+        try:
+            for line in Path(f"/proc/{pid}/status").read_text().splitlines():
+                if line.startswith("VmRSS:"):
+                    return int(line.split()[1])
+        except (FileNotFoundError, PermissionError, ValueError):
+            pass
+        return 0
+
+    def sample(self):
+        pids = [os.getpid(), *self._children(os.getpid())]
+        self.max_processes = max(self.max_processes, len(set(pids)))
+        self.max_memory_kb = max(
+            self.max_memory_kb, sum(self._memory_kb(pid) for pid in pids)
+        )
+
+    def _run(self):
+        while not self._stop.wait(0.25):
+            self.sample()
+
+    def start(self):
+        self.sample()
+        self._thread.start()
+
+    def stop(self):
+        self._stop.set()
+        self._thread.join(timeout=2)
+        self.sample()
+        children_usage = resource.getrusage(resource.RUSAGE_CHILDREN)
+        return {
+            "max_processes": self.max_processes,
+            "max_memory_mb": round(self.max_memory_kb / 1024, 1),
+            "child_cpu_seconds": round(
+                children_usage.ru_utime + children_usage.ru_stime, 2
+            ),
+        }
+
+
 def collect_values(url):
     if not validate_url(url):
         raise ValueError("MYTECHCONNECT_URL must be a MyTechConnect user-app URL")
     LOGGER.info("Starting MyTechConnect data request")
+    monitor = ResourceMonitor() if resource_metrics_enabled() else None
+    if monitor:
+        LOGGER.info("Resource metrics enabled")
+        monitor.start()
     try:
         with sync_playwright() as playwright:
             LOGGER.info("Starting Chromium browser")
@@ -100,6 +187,15 @@ def collect_values(url):
                     LOGGER.warning("Failed to close Chromium browser (%s: %s)", type(exc).__name__, exc)
     except Exception as exc:  # JSON output remains machine-readable on failure.
         raise RuntimeError(sanitize_error(exc)) from exc
+    finally:
+        if monitor:
+            metrics = monitor.stop()
+            LOGGER.info(
+                "Resource metrics: max_processes=%d, max_memory_mb=%.1f (PSS), child_cpu_seconds=%.2f",
+                metrics["max_processes"],
+                metrics["max_memory_mb"],
+                metrics["child_cpu_seconds"],
+            )
 
 
 def main():
