@@ -16,7 +16,6 @@ import os
 import resource
 import sys
 import threading
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -77,7 +76,7 @@ class ResourceMonitor:
         try:
             children_file = Path(f"/proc/{pid}/task/{pid}/children")
             children = [int(value) for value in children_file.read_text().split()]
-        except (FileNotFoundError, PermissionError, ValueError):
+        except (FileNotFoundError, PermissionError, ProcessLookupError, ValueError):
             return []
 
         result = []
@@ -94,13 +93,13 @@ class ResourceMonitor:
             for line in Path(f"/proc/{pid}/smaps_rollup").read_text().splitlines():
                 if line.startswith("Pss:"):
                     return int(line.split()[1])
-        except (FileNotFoundError, PermissionError, ValueError):
+        except (FileNotFoundError, PermissionError, ProcessLookupError, ValueError):
             pass
         try:
             for line in Path(f"/proc/{pid}/status").read_text().splitlines():
                 if line.startswith("VmRSS:"):
                     return int(line.split()[1])
-        except (FileNotFoundError, PermissionError, ValueError):
+        except (FileNotFoundError, PermissionError, ProcessLookupError, ValueError):
             pass
         return 0
 

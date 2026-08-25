@@ -38,6 +38,7 @@ Home Assistant supervises the container, provides the options through
 | `mqtt_discovery_prefix` | no | `homeassistant` |
 | `poll_interval_seconds` | no | `900` |
 | `resource_metrics` | no | `false` |
+| `nice_level` | no | `10` |
 
 The MyTechConnect session URL and MQTT password are masked fields in the
 app configuration. Never commit them to GitHub or copy them into logs.
@@ -79,7 +80,7 @@ The app definition is stored in `addon/mytechconnect_pool/`. The image is
 published as:
 
 ```text
-ghcr.io/jejecool-ui/mytechconnect-homeassistant:0.1.5
+ghcr.io/jejecool-ui/mytechconnect-homeassistant:0.1.6
 ```
 
 The `latest` tag is also published by GitHub Actions.

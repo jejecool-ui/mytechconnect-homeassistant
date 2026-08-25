@@ -86,6 +86,8 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 - [x] Porter à 240 secondes le timeout de navigation et de connexion initiale pour les installations HA lentes.
 - [x] Réduire la fenêtre Chromium au format mobile `390×844`.
 - [x] Ajouter l'option désactivée par défaut `resource_metrics` pour mesurer le nombre maximal de processus, la mémoire PSS et le temps CPU des descendants Chromium.
+- [x] Exécuter le polling avec une priorité CPU réduite via `nice -n 10`.
+- [x] Rendre la priorité `nice` configurable via l'option `nice_level` (de `-20` à `19`).
 - [x] Préparer le build ARM64 depuis WSL avec `docker buildx`.
 - [x] Activer l'émulation ARM64 via `tonistiigi/binfmt` pour construire depuis l'hôte amd64.
 - [x] Terminer et vérifier le build de l'image `mytechconnect-pool:arm64` (`linux/arm64`).
@@ -171,7 +173,7 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 - Fournir l'URL de session et les identifiants MQTT dans la configuration de l'add-on.
 - Effectuer une lecture toutes les 15 minutes par défaut et publier les valeurs via MQTT Discovery.
 - Consulter l'état et les logs depuis le Supervisor Home Assistant.
-- La version publiée actuelle est `0.1.5`, avec un tag Docker `0.1.5` et `latest` générés par GitHub Actions.
+- La version publiée actuelle est `0.1.6`, avec un tag Docker `0.1.6` et `latest` générés par GitHub Actions.
 
 ## Sécurité
 
