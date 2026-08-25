@@ -110,28 +110,61 @@ pousser ; le workflow GitHub Actions publiera alors le tag de version et
 
 ## Exécution locale
 
-Depuis la racine du projet :
+Les tests locaux se font directement avec Python et Chromium, sans Docker.
+Depuis la racine du projet, créer l'environnement puis installer les
+dépendances nécessaires au dump :
+
+```bash
+python3 -m venv /tmp/mytechconnect-venv
+/tmp/mytechconnect-venv/bin/python -m pip install -r tools/requirements-browser.txt
+```
+
+Le navigateur Chromium utilisé localement est :
+
+```text
+/home/servane/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome
+```
+
+Pour effectuer une collecte ponctuelle directement avec `mytechconnect_dump.py`,
+charger l'URL depuis `conf.local.yaml` sans l'afficher :
+
+```bash
+eval "$(python3 -c 'import yaml, shlex; d=yaml.safe_load(open("conf.local.yaml")); print("export MYTECHCONNECT_URL=" + shlex.quote(str(d["mytechconnect_url"])))')"
+export PLAYWRIGHT_CHROMIUM=/home/servane/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome
+/tmp/mytechconnect-venv/bin/python tools/mytechconnect_dump.py
+```
+
+Les métriques de ressources sont désactivées par défaut. Pour les activer et
+limiter la priorité CPU du test à `nice 10` :
+
+```bash
+export RESOURCE_METRICS=true
+nice -n 10 /tmp/mytechconnect-venv/bin/python tools/mytechconnect_dump.py
+```
+
+Le résultat JSON est écrit sur la sortie standard ; les métriques sont
+rapportées dans les logs (`max_processes`, `max_memory_mb` et
+`child_cpu_seconds`). `NICE_LEVEL` est une option de l'entrypoint Docker ; en
+exécution Python directe, utiliser `nice -n 10` comme ci-dessus.
+
+Pour tester la publication MQTT directement, installer aussi les dépendances
+MQTT :
+
+```bash
+eval "$(python3 -c 'import yaml, shlex; d=yaml.safe_load(open("conf.local.yaml")); m={"MYTECHCONNECT_URL":"mytechconnect_url","MQTT_HOST":"mqtt_host","MQTT_PORT":"mqtt_port","MQTT_USERNAME":"mqtt_username","MQTT_PASSWORD":"mqtt_password","MQTT_DISCOVERY_PREFIX":"mqtt_discovery_prefix","POLL_INTERVAL_SECONDS":"poll_interval_seconds","RESOURCE_METRICS":"resource_metrics","NICE_LEVEL":"nice_level"}; [print(f"export {k}={shlex.quote(str(d[v]))}") for k,v in m.items() if d.get(v) is not None]')"
+/tmp/mytechconnect-venv/bin/python -m pip install -r tools/requirements-mqtt.txt
+nice -n 10 /tmp/mytechconnect-venv/bin/python tools/mytechconnect_mqtt.py
+```
+
+Le nom `core-mosquitto` est généralement résolu uniquement dans le réseau
+Home Assistant. En dehors de ce réseau, utiliser dans `conf.local.yaml` un
+nom ou une adresse MQTT accessible depuis la machine de test.
+
+Pour un test interactif du dump, le lanceur reste disponible :
 
 ```bash
 export PLAYWRIGHT_CHROMIUM=/home/servane/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome
 ./tools/run_mytechconnect_dump.sh
-```
-
-Pour MQTT :
-
-```bash
-export MQTT_HOST=core-mosquitto
-export MQTT_PORT=1883
-export MQTT_USERNAME=...
-export MQTT_PASSWORD=...
-./tools/run_mytechconnect_mqtt.sh
-```
-
-Dépendances :
-
-```bash
-/tmp/mytechconnect-venv/bin/python -m pip install -r tools/requirements-browser.txt
-/tmp/mytechconnect-venv/bin/python -m pip install -r tools/requirements-mqtt.txt
 ```
 
 ## Sécurité
