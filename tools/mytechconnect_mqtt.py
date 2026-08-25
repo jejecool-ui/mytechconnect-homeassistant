@@ -10,8 +10,10 @@ import paho.mqtt.client as mqtt
 
 try:
     from mytechconnect_dump import collect_values
+    from mytechconnect_client import sanitize_error
 except ModuleNotFoundError:  # Import also works as tools.mytechconnect_mqtt.
     from tools.mytechconnect_dump import collect_values
+    from tools.mytechconnect_client import sanitize_error
 
 
 DEVICE = {
@@ -113,7 +115,7 @@ def main():
     try:
         values = collect_values(os.environ.get("MYTECHCONNECT_URL"))
     except Exception as exc:
-        LOGGER.error("MyTechConnect MQTT poll failed: %s", exc)
+        LOGGER.error("MyTechConnect MQTT poll failed: %s", sanitize_error(exc))
         return 1
 
     host = os.environ.get("MQTT_HOST", "core-mosquitto")

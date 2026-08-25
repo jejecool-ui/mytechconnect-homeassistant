@@ -22,6 +22,8 @@ from mytechconnect_client import (
     open_chart,
     open_device,
     open_page,
+    PLAYWRIGHT_CONNECTION_TIMEOUT_MS,
+    PLAYWRIGHT_TIMEOUT_MS,
     validate_url,
 )
 
@@ -46,7 +48,7 @@ def main() -> int:
         try:
             page.wait_for_function(
                 "document.querySelector('#user-app') && document.querySelector('#user-app').innerText.trim().length > 0",
-                timeout=60_000,
+                timeout=PLAYWRIGHT_CONNECTION_TIMEOUT_MS,
             )
         except PlaywrightTimeoutError:
             print("Blazor content did not render before timeout", file=sys.stderr)
@@ -75,12 +77,12 @@ def main() -> int:
             browser.close()
             return 0
 
-        page.locator(".navbar-container button").nth(1).click(timeout=15_000)
+        page.locator(".navbar-container button").nth(1).click(timeout=PLAYWRIGHT_TIMEOUT_MS)
         page.wait_for_timeout(500)
         (OUT / "menu-text.txt").write_text(page.locator("body").inner_text(), encoding="utf-8")
         (OUT / "menu.html").write_text(page.content(), encoding="utf-8")
 
-        page.get_by_text("Informations", exact=True).last.click(timeout=15_000)
+        page.get_by_text("Informations", exact=True).last.click(timeout=PLAYWRIGHT_TIMEOUT_MS)
         page.wait_for_timeout(1_500)
         (OUT / "info-text.txt").write_text(page.locator("body").inner_text(), encoding="utf-8")
         (OUT / "info.html").write_text(page.content(), encoding="utf-8")

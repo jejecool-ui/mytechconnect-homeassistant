@@ -8,6 +8,9 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 
 HOST_PREFIX = "https://mytech-connect.user-app.pool.mytech-connect.io/"
+PLAYWRIGHT_TIMEOUT_MS = 120_000
+PLAYWRIGHT_CONNECTION_TIMEOUT_MS = 240_000
+BLOCKED_RESOURCE_TYPES = {"image", "font", "media"}
 LOGGER = logging.getLogger(__name__)
 
 
@@ -15,10 +18,31 @@ def validate_url(url):
     return bool(url and url.startswith(HOST_PREFIX))
 
 
+def sanitize_error(message):
+    """Remove authenticated MyTechConnect URLs from browser error messages."""
+    return re.sub(
+        rf"{re.escape(HOST_PREFIX)}[^\s\"']*",
+        "[MYTECHCONNECT_URL_REDACTED]",
+        str(message),
+    )
+
+
 def launch_kwargs():
     kwargs = {
         "headless": True,
-        "args": ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
+        "args": [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--disable-extensions",
+            "--disable-background-networking",
+            "--disable-component-update",
+            "--disable-default-apps",
+            "--disable-sync",
+            "--no-first-run",
+            "--no-default-browser-check",
+        ],
     }
     chromium_path = os.environ.get("PLAYWRIGHT_CHROMIUM")
     if chromium_path:
@@ -26,20 +50,29 @@ def launch_kwargs():
     return kwargs
 
 
+def abort_nonessential_resource(route):
+    if route.request.resource_type in BLOCKED_RESOURCE_TYPES:
+        route.abort()
+    else:
+        route.continue_()
+
+
 def open_page(browser, url):
     LOGGER.info("Opening MyTechConnect page (URL prefix, 50 chars): %s", url[:50])
     page = browser.new_page(viewport={"width": 1440, "height": 1200})
-    page.goto(url, wait_until="domcontentloaded", timeout=60_000)
+    page.route("**/*", abort_nonessential_resource)
+    page.set_default_timeout(PLAYWRIGHT_TIMEOUT_MS)
+    page.goto(url, wait_until="domcontentloaded", timeout=PLAYWRIGHT_CONNECTION_TIMEOUT_MS)
     LOGGER.info("MyTechConnect page loaded; waiting for rendered application")
     try:
         page.wait_for_function(
             "document.querySelector('#user-app') && document.querySelector('#user-app').innerText.trim().length > 0",
-            timeout=60_000,
+            timeout=PLAYWRIGHT_CONNECTION_TIMEOUT_MS,
         )
     except PlaywrightTimeoutError:
         # Let callers inspect the rendered error page or handle the exception
         # from the next navigation step.
-        LOGGER.warning("Rendered MyTechConnect application did not appear within 60 seconds")
+        LOGGER.warning("Rendered MyTechConnect application did not appear within 240 seconds")
     else:
         LOGGER.info("Rendered MyTechConnect application detected")
     return page
@@ -53,7 +86,7 @@ def open_device(page):
     if not device_count:
         LOGGER.error("No MyTechConnect device entry found on the rendered page")
     LOGGER.info("Opening first MyTechConnect device")
-    devices.first.click(timeout=15_000)
+    devices.first.click(timeout=PLAYWRIGHT_TIMEOUT_MS)
     page.wait_for_timeout(1_500)
     LOGGER.info("MyTechConnect device page opened")
 
@@ -122,21 +155,21 @@ def open_chart(page, menu_open=False):
     LOGGER.info("Opening MyTechConnect data chart")
     if not menu_open:
         LOGGER.info("Opening MyTechConnect navigation menu")
-        page.locator(".navbar-container button").nth(1).click(timeout=15_000)
+        page.locator(".navbar-container button").nth(1).click(timeout=PLAYWRIGHT_TIMEOUT_MS)
         page.wait_for_timeout(300)
         LOGGER.info("MyTechConnect navigation menu opened")
     LOGGER.info("Opening MyTechConnect Information section")
-    page.get_by_text("Informations", exact=True).last.click(timeout=15_000)
+    page.get_by_text("Informations", exact=True).last.click(timeout=PLAYWRIGHT_TIMEOUT_MS)
     page.wait_for_timeout(500)
     LOGGER.info("MyTechConnect Information section opened")
     LOGGER.info("Selecting MyTechConnect data charts")
-    page.get_by_text("Graphiques de données", exact=True).last.click(timeout=15_000)
+    page.get_by_text("Graphiques de données", exact=True).last.click(timeout=PLAYWRIGHT_TIMEOUT_MS)
     LOGGER.info("MyTechConnect data charts selected; waiting for Highcharts data")
     page.wait_for_function(
         """() => (window.Highcharts?.charts || []).some(chart =>
             chart && chart.series.some(series =>
                 series.name === \"Température d'eau (calculée)\" && series.points.length > 0))""",
-        timeout=30_000,
+        timeout=PLAYWRIGHT_TIMEOUT_MS,
     )
     LOGGER.info("MyTechConnect data chart loaded")
 

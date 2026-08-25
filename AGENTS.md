@@ -28,6 +28,23 @@ La page principale est la source de vérité pour savoir si une température d'e
 
 `Chromium headless + Playwright → extraction DOM/Highcharts → MQTT Discovery → Home Assistant`
 
+Les opérations Playwright (clics, recherche DOM et chargement Highcharts)
+utilisent un timeout de 120 secondes afin de tolérer la lenteur de Home
+Assistant et de l'interface distante. La navigation et l'attente de la
+connexion/rendu initial utilisent 240 secondes.
+
+Pour limiter la charge sur Home Assistant, Chromium doit être fermé après
+chaque collecte, y compris en cas d'erreur. Les images, polices et médias non
+nécessaires peuvent être bloqués ; les scripts, le CSS, Blazor, SignalR et
+Highcharts doivent rester chargés.
+
+MyTechConnect est une application Blazor Server. Le HTML initial est un
+simple squelette ; les données interactives passent par le circuit SignalR
+Blazor et le navigateur exécute le JavaScript qui rend Highcharts. L'API HTTP
+seule de Playwright ne suffit donc pas pour ce projet. Chromium peut être
+remplacé par un autre moteur de navigateur pris en charge uniquement si tout
+le flux Blazor et Highcharts reste fonctionnel.
+
 Le code commun est dans `tools/mytechconnect_client.py`.
 
 - `mytechconnect_probe.py` : diagnostic, captures HTML/PNG et extraction complète du graphique.
@@ -35,6 +52,11 @@ Le code commun est dans `tools/mytechconnect_client.py`.
 - `mytechconnect_mqtt.py` : collecte puis publication MQTT Discovery et états MQTT.
 - `run_mytechconnect_dump.sh` : lanceur interactif du dump JSON.
 - `run_mytechconnect_mqtt.sh` : lanceur interactif de la publication MQTT.
+
+Le graphique contient notamment la série `Température d'eau (calculée)`.
+Dans Highcharts, ses mesures sont des points `{x, y}` : `x` est un timestamp
+Unix en millisecondes et `y` une température numérique en °C. Le code lit le
+dernier point après le chargement du graphique.
 
 L'add-on Home Assistant est défini dans `addon/mytechconnect_pool/` et
 référence l'image publique
@@ -122,6 +144,19 @@ export MQTT_USERNAME=...
 export MQTT_PASSWORD=...
 ./tools/run_mytechconnect_mqtt.sh
 ```
+
+Pour un test local de collecte sans publication MQTT, utiliser un fichier
+non versionné `conf.local.yaml` à la racine, puis charger ses valeurs dans
+l'environnement avant de lancer `tools/mytechconnect_dump.py`. Le fichier est
+exclu par `.gitignore` et ne doit jamais être affiché ou ajouté à Git.
+
+Les logs de l'application sont horodatés. La collecte journalise le démarrage
+de Chromium, le rendu de l'application, la détection de l'appareil, les
+étapes de navigation du graphique, l'attente de Highcharts et la lecture du
+dernier point. Les erreurs de graphique incluent leur type et leur message,
+mais aucune URL de session complète, aucun cookie ni identifiant MQTT. Les
+exceptions Playwright doivent être nettoyées avant journalisation, car un
+timeout de navigation peut inclure automatiquement l'URL complète.
 
 Dépendances :
 

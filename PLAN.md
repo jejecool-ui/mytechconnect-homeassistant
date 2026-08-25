@@ -19,6 +19,8 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 - [x] Identifier l'interface distante `mytech-connect.user-app.pool.mytech-connect.io`.
 - [x] Confirmer que l'interface est une application Blazor Server.
 - [x] Identifier le transport SignalR `/_blazor/negotiate` et le protocole `blazorpack`.
+- [x] Confirmer que la lecture nécessite un navigateur JavaScript : le HTML initial seul ne contient pas les données dynamiques.
+- [x] Confirmer que le graphique est rendu par Highcharts à partir de séries contenant des points `{x: timestamp_ms, y: value}`.
 - [x] Conserver les artefacts dans `analysis/mytechconnect-6.2/`.
 
 ## Prochaine étape : capture du fonctionnement web
@@ -75,6 +77,13 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 - [x] Lire les options de l'add-on depuis `/data/options.json` sans intégrer les secrets à l'image.
 - [x] Ajouter le dépôt d'add-on (`repository.yaml`), sa documentation et la publication GHCR via GitHub Actions.
 - [x] Ajouter une description anglaise et une icône dédiée pour l'app Home Assistant.
+- [x] Ajouter des logs horodatés pour les étapes de navigation, l'extraction et le chargement du graphique.
+- [x] Afficher le type et le message des erreurs de lecture de graphique sans exposer les secrets.
+- [x] Nettoyer les messages d'erreur Playwright afin qu'une URL de session ne soit jamais recopiée dans les logs.
+- [x] Ignorer `conf.local.yaml` et valider une collecte locale en lecture seule avec cette configuration.
+- [x] Fermer Chromium systématiquement après chaque collecte, y compris après une erreur.
+- [x] Réduire la charge Chromium en bloquant les images, polices et médias non nécessaires à l'extraction.
+- [x] Porter à 240 secondes le timeout de navigation et de connexion initiale pour les installations HA lentes.
 - [x] Préparer le build ARM64 depuis WSL avec `docker buildx`.
 - [x] Activer l'émulation ARM64 via `tonistiigi/binfmt` pour construire depuis l'hôte amd64.
 - [x] Terminer et vérifier le build de l'image `mytechconnect-pool:arm64` (`linux/arm64`).
@@ -92,6 +101,8 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 ## Résultat de la sonde web
 
 - La page est une application Blazor Server et la navigation authentifiée fonctionne avec Playwright.
+- La communication interactive passe par le circuit SignalR Blazor, généralement sur WebSocket avec repli possible vers d'autres transports SignalR ; une simple requête HTTPS ne suffit donc pas à reproduire l'application.
+- Playwright doit utiliser un moteur de navigateur (Chromium actuellement) pour exécuter Blazor et le JavaScript qui construit Highcharts. L'API HTTP de Playwright seule ne suffit pas pour lire le graphique.
 - La vue PAC affiche une température d'eau instantanée ; la vue graphique expose la série `Température d'eau (calculée)`.
 - Le graphique contient trois séries et des points espacés d'environ cinq minutes. La série eau est lisible depuis `window.Highcharts.charts`.
 - La voie la plus simple sans modification hardware est donc un petit service logiciel navigateur → MQTT ou API REST Home Assistant ; il devra renouveler/réutiliser une session valide.
@@ -101,6 +112,7 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 - Lire d'abord la température entière affichée dans la vue principale de la PAC.
 - Si cette valeur est absente, considérer la température d'eau comme indisponible et ne pas ouvrir la page des graphiques : la valeur estimée du graphique est alors jugée invalide.
 - Si la valeur principale existe, le graphique peut éventuellement fournir une précision décimale ; en cas d'échec ou de valeur incohérente, conserver la valeur entière de la page principale.
+- Les logs de diagnostic indiquent les étapes `menu → Informations → Graphiques`, l'attente de Highcharts, puis la valeur et le timestamp du dernier point ; ils ne doivent jamais contenir l'URL complète, les cookies ou les identifiants.
 
 ### Essai de lecture 1
 
@@ -156,6 +168,7 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 - Fournir l'URL de session et les identifiants MQTT dans la configuration de l'add-on.
 - Effectuer une lecture toutes les 15 minutes par défaut et publier les valeurs via MQTT Discovery.
 - Consulter l'état et les logs depuis le Supervisor Home Assistant.
+- La version publiée actuelle est `0.1.4`, avec un tag Docker `0.1.4` et `latest` générés par GitHub Actions.
 
 ## Sécurité
 

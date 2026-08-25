@@ -26,6 +26,7 @@ try:
         open_device,
         open_page,
         precise_water_temperature,
+        sanitize_error,
         validate_url,
     )
 except ModuleNotFoundError:  # Import also works as tools.mytechconnect_dump.
@@ -36,6 +37,7 @@ except ModuleNotFoundError:  # Import also works as tools.mytechconnect_dump.
         open_device,
         open_page,
         precise_water_temperature,
+        sanitize_error,
         validate_url,
     )
 
@@ -56,55 +58,61 @@ def collect_values(url):
         with sync_playwright() as playwright:
             LOGGER.info("Starting Chromium browser")
             browser = playwright.chromium.launch(**launch_kwargs())
-            page = open_page(browser, url)
-            open_device(page)
-            raw = extract_main_values(page)
-            values = normalize_sensor_values(raw)
+            try:
+                page = open_page(browser, url)
+                open_device(page)
+                raw = extract_main_values(page)
+                values = normalize_sensor_values(raw)
 
-            LOGGER.info(
-                "Intermediate result: heat pump state=%s, water flow=%s",
-                values["binary_sensor.pool_heat_pump"],
-                values["binary_sensor.pool_water_flow"],
-            )
-
-            # A missing main-page temperature means no reliable water reading.
-            # Do not consult the estimated chart in that case.
-            if values["sensor.pool_water_temperature"] is not None:
                 LOGGER.info(
-                    "Starting water temperature precision retrieval "
-                    "(main-page temperature is available)"
+                    "Intermediate result: heat pump state=%s, water flow=%s",
+                    values["binary_sensor.pool_heat_pump"],
+                    values["binary_sensor.pool_water_flow"],
                 )
-                try:
-                    point = precise_water_temperature(page)
-                    if point and point["value"] is not None:
-                        values["sensor.pool_water_temperature"] = point["value"]
-                        LOGGER.info(
-                            "Water temperature precision retrieved: %.1f °C",
-                            point["value"],
-                        )
-                    else:
-                        LOGGER.warning(
-                            "Water temperature precision unavailable; keeping "
-                            "the main-page value"
-                        )
-                except Exception as exc:
-                    LOGGER.warning(
-                        "Water temperature precision retrieval failed; keeping "
-                        "the main-page value (%s: %s)",
-                        type(exc).__name__,
-                        exc,
+
+                # A missing main-page temperature means no reliable water reading.
+                # Do not consult the estimated chart in that case.
+                if values["sensor.pool_water_temperature"] is not None:
+                    LOGGER.info(
+                        "Starting water temperature precision retrieval "
+                        "(main-page temperature is available)"
                     )
-            else:
-                LOGGER.info(
-                    "Water temperature unavailable on the main page; "
-                    "skipping chart retrieval"
-                )
+                    try:
+                        point = precise_water_temperature(page)
+                        if point and point["value"] is not None:
+                            values["sensor.pool_water_temperature"] = point["value"]
+                            LOGGER.info(
+                                "Water temperature precision retrieved: %.1f °C",
+                                point["value"],
+                            )
+                        else:
+                            LOGGER.warning(
+                                "Water temperature precision unavailable; keeping "
+                                "the main-page value"
+                            )
+                    except Exception as exc:
+                        LOGGER.warning(
+                            "Water temperature precision retrieval failed; keeping "
+                            "the main-page value (%s: %s)",
+                            type(exc).__name__,
+                            sanitize_error(exc),
+                        )
+                else:
+                    LOGGER.info(
+                        "Water temperature unavailable on the main page; "
+                        "skipping chart retrieval"
+                    )
 
-            browser.close()
-            LOGGER.info("MyTechConnect data request completed")
-            return values
+                LOGGER.info("MyTechConnect data request completed")
+                return values
+            finally:
+                try:
+                    browser.close()
+                    LOGGER.info("Chromium browser closed")
+                except Exception as exc:
+                    LOGGER.warning("Failed to close Chromium browser (%s: %s)", type(exc).__name__, exc)
     except Exception as exc:  # JSON output remains machine-readable on failure.
-        raise RuntimeError(str(exc)) from exc
+        raise RuntimeError(sanitize_error(exc)) from exc
 
 
 def main():
@@ -112,7 +120,7 @@ def main():
     try:
         values = collect_values(url)
     except Exception as exc:
-        LOGGER.error("MyTechConnect data request failed: %s", exc)
+        LOGGER.error("MyTechConnect data request failed: %s", sanitize_error(exc))
         return 1
 
     result = {
