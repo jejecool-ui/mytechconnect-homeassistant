@@ -10,7 +10,7 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 HOST_PREFIX = "https://mytech-connect.user-app.pool.mytech-connect.io/"
 PLAYWRIGHT_TIMEOUT_MS = 240_000
 PLAYWRIGHT_CONNECTION_TIMEOUT_MS = 480_000
-BLOCKED_RESOURCE_TYPES = {"image", "font", "media"}
+BLOCKED_RESOURCE_TYPES = {"image", "font", "media", "stylesheet"}
 MOBILE_VIEWPORT = {"width": 390, "height": 844}
 LOGGER = logging.getLogger(__name__)
 
@@ -43,6 +43,10 @@ def launch_kwargs():
             "--disable-sync",
             "--no-first-run",
             "--no-default-browser-check",
+            "--renderer-process-limit=1",
+            "--js-flags=--max-old-space-size=128",
+            "--disable-software-rasterizer",
+            "--mute-audio",
         ],
     }
     chromium_path = os.environ.get("PLAYWRIGHT_CHROMIUM")

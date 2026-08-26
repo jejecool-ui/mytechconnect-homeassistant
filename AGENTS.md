@@ -45,8 +45,9 @@ Elle redirige l'utilisateur vers une application web hébergée sur `https://myt
 
 ### Optimisation des ressources
 Pour fonctionner de manière fluide sur des hôtes Home Assistant légers (ex. Raspberry Pi) :
-- **Blocage des ressources non essentielles** : interception réseau Playwright pour avorter immédiatement les requêtes `image`, `font` et `media`.
+- **Blocage des ressources non essentielles** : interception réseau Playwright pour avorter immédiatement les requêtes `image`, `font`, `media` et `stylesheet`.
 - **Viewport mobile réduit** : fixé à `390×844`.
+- **Arguments de démarrage optimisés** : limitation à un seul processus de rendu (`--renderer-process-limit=1`), bridage du tas JS V8 (`--js-flags=--max-old-space-size=128`), désactivation de la rastérisation logicielle et coupure du son.
 - **Timeouts adaptés** : 240 secondes par défaut pour les étapes, 480 secondes pour le chargement et le rendu initial du circuit Blazor.
 - **Priorité CPU (`nice`)** : exécution par défaut avec `nice -n 10` (configurable de `-20` à `19`).
 - **Cycle de vie propre** : fermeture systématique du navigateur Chromium dans un bloc `finally` pour éviter tout processus résiduel.
