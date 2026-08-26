@@ -115,7 +115,7 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 
 - Lire d'abord la température entière affichée dans la vue principale de la PAC.
 - Lire la température extérieure depuis la page principale à chaque collecte.
-- Ouvrir le graphique et lire la série `Température d'eau (calculée)` uniquement lorsque le débit est `ON` ; en cas d'échec, publier la température d'eau comme indisponible.
+- Ouvrir le graphique et lire la série `Température d'eau (calculée)` uniquement lorsque le débit est `ON` ; en cas d'échec, ne pas publier de nouvelle valeur pour la température d'eau.
 - Lorsque le débit est `OFF`, ne lire ni publier aucune température d'eau ; conserver la température extérieure de la page principale.
 - Les logs de diagnostic indiquent les étapes `menu → Informations → Graphiques`, l'attente de Highcharts, puis la valeur et le timestamp du dernier point ; ils ne doivent jamais contenir l'URL complète, les cookies ou les identifiants.
 
@@ -173,7 +173,7 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 - Fournir l'URL de session et les identifiants MQTT dans la configuration de l'add-on.
 - Effectuer une lecture toutes les 15 minutes par défaut et publier les valeurs via MQTT Discovery.
 - Consulter l'état et les logs depuis le Supervisor Home Assistant.
-- La version publiée actuelle est `0.1.6`, avec un tag Docker `0.1.6` et `latest` générés par GitHub Actions.
+- La version publiée actuelle est `0.1.7`, avec un tag Docker `0.1.7` et `latest` générés par GitHub Actions.
 
 ## Sécurité
 

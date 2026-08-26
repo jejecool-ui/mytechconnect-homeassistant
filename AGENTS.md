@@ -28,8 +28,8 @@ La page principale est la source de vérité pour savoir si un débit d'eau est 
 
 - **Température extérieure** : lue depuis la page principale à chaque collecte.
 - **Débit `ON`** : naviguer vers le graphique et extraire la série `Température d'eau (calculée)` pour obtenir la valeur décimale précise.
-- **Débit `OFF`** (message `PAS DE DÉBIT D’EAU (VÉRIFIEZ LA POMPE DE CIRCULATION)`) : ne pas consulter le graphique. La température d'eau est publiée comme indisponible (`None` / `null`) et la température extérieure reste conservée.
-- En cas d'échec d'extraction du graphique alors que le débit est `ON`, publier la température d'eau comme indisponible sans faire échouer l'ensemble de la collecte.
+- **Débit `OFF`** (message `PAS DE DÉBIT D’EAU (VÉRIFIEZ LA POMPE DE CIRCULATION)`) : ne pas consulter le graphique. Aucune nouvelle valeur n'est publiée sur le topic MQTT de la température d'eau (`sensor.pool_water_temperature`), conservant ainsi la dernière valeur retenue dans MQTT / Home Assistant. La température extérieure reste conservée et mise à jour.
+- En cas d'échec d'extraction du graphique alors que le débit est `ON`, ne pas publier de nouvelle valeur de température d'eau sans faire échouer l'ensemble de la collecte.
 
 ---
 

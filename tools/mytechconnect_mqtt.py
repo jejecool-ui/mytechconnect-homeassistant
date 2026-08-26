@@ -131,6 +131,12 @@ def main():
         publish(client, AVAILABILITY_TOPIC, "online")
         for entity_id in SENSORS:
             value = values.get(entity_id)
+            if entity_id == "sensor.pool_water_temperature" and value is None:
+                LOGGER.info(
+                    "Skipping MQTT state publication for %s (no value available / water flow is OFF)",
+                    entity_id,
+                )
+                continue
             if value is None:
                 # Home Assistant's MQTT sensor parser expects numeric topics
                 # to remain numeric. The literal "unavailable" is rejected

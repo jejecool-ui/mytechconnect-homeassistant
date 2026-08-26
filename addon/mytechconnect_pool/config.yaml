@@ -1,5 +1,5 @@
 name: MyTechConnect Pool
-version: "0.1.6"
+version: "0.1.7"
 slug: mytechconnect_pool
 description: >-
   Read-only MyTechConnect pool heat pump monitoring for Home Assistant via
