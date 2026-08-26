@@ -8,8 +8,8 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 
 HOST_PREFIX = "https://mytech-connect.user-app.pool.mytech-connect.io/"
-PLAYWRIGHT_TIMEOUT_MS = 120_000
-PLAYWRIGHT_CONNECTION_TIMEOUT_MS = 240_000
+PLAYWRIGHT_TIMEOUT_MS = 240_000
+PLAYWRIGHT_CONNECTION_TIMEOUT_MS = 480_000
 BLOCKED_RESOURCE_TYPES = {"image", "font", "media"}
 MOBILE_VIEWPORT = {"width": 390, "height": 844}
 LOGGER = logging.getLogger(__name__)
@@ -73,7 +73,7 @@ def open_page(browser, url):
     except PlaywrightTimeoutError:
         # Let callers inspect the rendered error page or handle the exception
         # from the next navigation step.
-        LOGGER.warning("Rendered MyTechConnect application did not appear within 240 seconds")
+        LOGGER.warning("Rendered MyTechConnect application did not appear within 480 seconds")
     else:
         LOGGER.info("Rendered MyTechConnect application detected")
     return page
@@ -88,7 +88,7 @@ def open_device(page):
         LOGGER.error("No MyTechConnect device entry found on the rendered page")
     LOGGER.info("Opening first MyTechConnect device")
     devices.first.click(timeout=PLAYWRIGHT_TIMEOUT_MS)
-    page.wait_for_timeout(1_500)
+    page.wait_for_timeout(3_000)
     LOGGER.info("MyTechConnect device page opened")
 
 
@@ -157,11 +157,11 @@ def open_chart(page, menu_open=False):
     if not menu_open:
         LOGGER.info("Opening MyTechConnect navigation menu")
         page.locator(".navbar-container button").nth(1).click(timeout=PLAYWRIGHT_TIMEOUT_MS)
-        page.wait_for_timeout(300)
+        page.wait_for_timeout(600)
         LOGGER.info("MyTechConnect navigation menu opened")
     LOGGER.info("Opening MyTechConnect Information section")
     page.get_by_text("Informations", exact=True).last.click(timeout=PLAYWRIGHT_TIMEOUT_MS)
-    page.wait_for_timeout(500)
+    page.wait_for_timeout(1_000)
     LOGGER.info("MyTechConnect Information section opened")
     LOGGER.info("Selecting MyTechConnect data charts")
     page.get_by_text("Graphiques de données", exact=True).last.click(timeout=PLAYWRIGHT_TIMEOUT_MS)

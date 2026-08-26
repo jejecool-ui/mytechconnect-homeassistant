@@ -83,7 +83,7 @@ Aucune modification hardware : ne pas remplacer le boîtier Wi-Fi, ne pas ajoute
 - [x] Ignorer `conf.local.yaml` et valider une collecte locale en lecture seule avec cette configuration.
 - [x] Fermer Chromium systématiquement après chaque collecte, y compris après une erreur.
 - [x] Réduire la charge Chromium en bloquant les images, polices et médias non nécessaires à l'extraction.
-- [x] Porter à 240 secondes le timeout de navigation et de connexion initiale pour les installations HA lentes.
+- [x] Porter à 480 secondes le timeout de navigation et de connexion initiale pour les installations HA lentes.
 - [x] Réduire la fenêtre Chromium au format mobile `390×844`.
 - [x] Ajouter l'option désactivée par défaut `resource_metrics` pour mesurer le nombre maximal de processus, la mémoire PSS et le temps CPU des descendants Chromium.
 - [x] Exécuter le polling avec une priorité CPU réduite via `nice -n 10`.

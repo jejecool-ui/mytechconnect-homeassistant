@@ -53,7 +53,7 @@ def main() -> int:
         except PlaywrightTimeoutError:
             print("Blazor content did not render before timeout", file=sys.stderr)
 
-        page.wait_for_timeout(3_000)
+        page.wait_for_timeout(6_000)
         text = page.locator("body").inner_text()
         html = page.content()
         page.screenshot(path=str(OUT / "page.png"), full_page=True)
@@ -63,7 +63,7 @@ def main() -> int:
         # Follow the same read-only navigation as the mobile UI so that the
         # chart page can be inspected in the authenticated browser context.
         open_device(page)
-        page.wait_for_timeout(500)
+        page.wait_for_timeout(1_000)
         (OUT / "device-text.txt").write_text(page.locator("body").inner_text(), encoding="utf-8")
         (OUT / "device.html").write_text(page.content(), encoding="utf-8")
         page.screenshot(path=str(OUT / "device.png"), full_page=True)
@@ -78,17 +78,17 @@ def main() -> int:
             return 0
 
         page.locator(".navbar-container button").nth(1).click(timeout=PLAYWRIGHT_TIMEOUT_MS)
-        page.wait_for_timeout(500)
+        page.wait_for_timeout(1_000)
         (OUT / "menu-text.txt").write_text(page.locator("body").inner_text(), encoding="utf-8")
         (OUT / "menu.html").write_text(page.content(), encoding="utf-8")
 
         page.get_by_text("Informations", exact=True).last.click(timeout=PLAYWRIGHT_TIMEOUT_MS)
-        page.wait_for_timeout(1_500)
+        page.wait_for_timeout(3_000)
         (OUT / "info-text.txt").write_text(page.locator("body").inner_text(), encoding="utf-8")
         (OUT / "info.html").write_text(page.content(), encoding="utf-8")
 
         open_chart(page, menu_open=True)
-        page.wait_for_timeout(500)
+        page.wait_for_timeout(1_000)
         (OUT / "chart-text.txt").write_text(page.locator("body").inner_text(), encoding="utf-8")
         (OUT / "chart.html").write_text(page.content(), encoding="utf-8")
         page.screenshot(path=str(OUT / "chart.png"), full_page=True)
