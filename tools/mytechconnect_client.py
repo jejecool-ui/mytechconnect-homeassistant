@@ -104,6 +104,14 @@ def text_or_none(page, selector):
     return value or None
 
 
+def attribute_or_none(page, selector, attribute):
+    locator = page.locator(selector).first
+    if not locator.count():
+        return None
+    value = locator.get_attribute(attribute)
+    return value.strip() if value else None
+
+
 def mode_from_class(page, selector):
     locator = page.locator(selector).first
     if not locator.count():
@@ -118,16 +126,29 @@ def mode_from_class(page, selector):
 def extract_main_values(page):
     LOGGER.info("Extracting values from the main MyTechConnect page")
     body = page.locator("body").inner_text()
-    state = text_or_none(page, "#heat-pump-on-off")
+    body_folded = body.casefold()
+    state = text_or_none(
+        page,
+        "#heat-pump-on-off .istd-co-hideable:not(.istd-co-hidden)",
+    )
     state = state.upper() if state else None
+    setpoint = attribute_or_none(
+        page,
+        "#heat-pump-temperature-gauge-gauge .rs-handle",
+        "aria-valuenow",
+    ) or attribute_or_none(
+        page,
+        "input[name='heat-pump-temperature-gauge-gauge']",
+        "value",
+    )
     values = {
         "heat_pump_state": state if state in {"ON", "OFF"} else None,
-        "water_flow": None if not body else "OFF" if "PAS DE DÉBIT D’EAU" in body or "PAS DE DEBIT D'EAU" in body else "ON",
+        "water_flow": None if not body else "OFF" if "pas de débit d’eau" in body_folded or "pas de debit d'eau" in body_folded else "ON",
         "water_temperature": text_or_none(page, ".order-and-value-heatpump .order-and-value-value-number"),
         "outdoor_temperature": text_or_none(page, ".topbar-weather"),
         "operation_mode": mode_from_class(page, "#heat-pump-power-mode .state-button-container:nth-child(1) .state-button-value .istd-co-icon"),
         "regulation_mode": mode_from_class(page, "#heat-pump-power-mode .state-button-container:nth-child(2) .state-button-value .istd-co-icon"),
-        "setpoint": text_or_none(page, ".order-and-value-heatpump .order-and-value-set .order-and-value-order-number"),
+        "setpoint": setpoint,
     }
     LOGGER.info("Main MyTechConnect values extracted")
     return values

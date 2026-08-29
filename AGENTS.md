@@ -154,16 +154,43 @@ Les tests locaux se font directement avec Python et Chromium, sans passer par Do
 
 ### 1. Préparation de l'environnement virtuel
 
+Prérequis côté hôte : `python3`, le module `venv`, `pip`, PyYAML (utilisé par les
+commandes de chargement de `conf.local.yaml`), et un binaire Chromium
+exécutable. Vérifier notamment que `python3 -m venv` fonctionne avant de lancer
+les scripts. L'environnement virtuel est volontairement créé dans `/tmp` et
+doit être recréé sur une nouvelle machine ou après nettoyage de `/tmp`.
+
 ```bash
+python3 -c 'import yaml; print(yaml.__version__)'
 python3 -m venv /tmp/mytechconnect-venv
 /tmp/mytechconnect-venv/bin/python -m pip install -r tools/requirements-browser.txt
 /tmp/mytechconnect-venv/bin/python -m pip install -r tools/requirements-mqtt.txt
 ```
 
+Les deux fichiers de requirements sont nécessaires : le premier installe
+Playwright pour la collecte navigateur, le second installe le client MQTT.
+L'installation nécessite un accès au dépôt Python configuré sur l'hôte. En
+cas d'exécution dans une sandbox sans accès réseau, installer les dépendances
+depuis un environnement autorisé puis relancer le script.
+
 Le binaire Chromium local est :
 ```text
 /home/servane/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome
 ```
+
+Ce chemin est propre à l'environnement de développement et peut varier. Avant
+la collecte, vérifier qu'il existe et qu'il est exécutable, puis adapter
+`PLAYWRIGHT_CHROMIUM` si nécessaire :
+
+```bash
+test -x /home/servane/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome
+```
+
+Playwright lance plusieurs processus Chromium. Sur certains hôtes ou
+environnements sandboxés, Chromium peut quitter immédiatement avec `SIGTRAP`
+avant toute navigation ; dans ce cas, exécuter la commande de collecte dans un
+environnement autorisé à lancer le navigateur, sans modifier les options de
+lecture seule du projet.
 
 ### 2. Collecte ponctuelle (Dump JSON)
 

@@ -80,7 +80,7 @@ The app definition is stored in `addon/mytechconnect_pool/`. The image is
 published as:
 
 ```text
-ghcr.io/jejecool-ui/mytechconnect-homeassistant:0.1.8
+ghcr.io/jejecool-ui/mytechconnect-homeassistant:0.1.9
 ```
 
 The `latest` tag is also published by GitHub Actions.
